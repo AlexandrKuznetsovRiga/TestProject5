@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
@@ -31,7 +32,71 @@ public class CountryGraphService {
 
 
     @PostConstruct
-    public void _init() throws JsonProcessingException {
+    public void _init() throws InterruptedException {
+        while (true) {
+            try {
+                downloadRemoteData();
+                calculate();
+                break;
+            } catch (Throwable e) {
+                log.warn("Can not initialize Service, sleep for 5 seconds", e);
+                TimeUnit.SECONDS.sleep(5);
+            }
+        }
+    }
+
+    private void calculate() {
+        final List<Short> allCountryCodes = new ArrayList<>(revCcIndex.keySet());
+        allCountryCodes.sort(Short::compareTo);
+
+        final List<Integer> allPairsBackLog = new ArrayList<>();
+        for (final short cCode : allCountryCodes) {
+            for (int i = 0; i < allCountryCodes.size(); i++) {
+                final short cCode2 = allCountryCodes.get(i);
+                //fast way to exclude duplicates
+                if (cCode2 <= cCode) {
+                    continue;
+                }
+                final int hash = HashUtil.genHash(cCode, cCode2);
+                if (!routing.containsKey(hash)) {
+                    allPairsBackLog.add(hash);
+                }
+            }
+        }
+
+
+        calculateRouts(allPairsBackLog, allCountryCodes.size());
+        infoFinalStats();
+
+    }
+
+    private void infoFinalStats() {
+        int maxLength = 0;
+        int maxLengthHash = 0;
+        int directCounter = 0;
+        for (Map.Entry<Integer, short[]> entry : routing.entrySet()) {
+            if (entry.getValue().length > maxLength) {
+                maxLength = entry.getValue().length;
+                maxLengthHash = entry.getKey();
+            }
+            if (entry.getValue().length == 0) {
+                directCounter++;
+            }
+        }
+
+        String[] cc = hashToCountryCodes(maxLengthHash);
+
+        log.info("Found " + ccIndexMap.size() + " countries, " + routing.size() + " possible connections, direct connections: " + directCounter);
+
+        log.info("Calculated " + routing.size() + " connections, longest route: " + cc[0] + " - " + cc[1] + ", " + maxLength + " points");
+    }
+
+    private String[] hashToCountryCodes(int hash) {
+        final short[] indexes = HashUtil.extractCodes(hash);
+        return new String[]{revCcIndex.get(indexes[0]), revCcIndex.get(indexes[1])};
+    }
+
+    private void downloadRemoteData() throws JsonProcessingException {
         log.info("Source: " + sourceUrl);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -63,44 +128,6 @@ public class CountryGraphService {
 
             }
         }
-
-        final List<Short> allCountryCodes = new ArrayList<>(revCcIndex.keySet());
-        allCountryCodes.sort(Short::compareTo);
-
-        final List<Integer> allPairsBackLog = new ArrayList<>();
-        for (final short cCode : allCountryCodes) {
-            for (int i = 0; i < allCountryCodes.size(); i++) {
-                final short cCode2 = allCountryCodes.get(i);
-                //fast way to exclude duplicates
-                if (cCode2 <= cCode) {
-                    continue;
-                }
-                final int hash = HashUtil.genHash(cCode, cCode2);
-                if (!routing.containsKey(hash)) {
-                    allPairsBackLog.add(hash);
-                }
-            }
-        }
-        Set<Integer> testSet = new HashSet<>(allPairsBackLog);
-        log.info("Found " + allCountryCodes.size() + " countries, " + routing.size() + " direct connections, " + allPairsBackLog.size() + "(" + testSet.size() + ") possible pairs ");
-
-        calculateRouts(allPairsBackLog, allCountryCodes.size());
-        int maxLength = 0;
-        int maxLengthHash = 0;
-        for (Map.Entry<Integer, short[]> entry : routing.entrySet()) {
-            if (entry.getValue().length > maxLength) {
-                maxLength = entry.getValue().length;
-                maxLengthHash = entry.getKey();
-            }
-        }
-
-        short[] indexes = HashUtil.extractCodes(maxLengthHash);
-        String cc1 = revCcIndex.get(indexes[0]);
-        String cc2 = revCcIndex.get(indexes[1]);
-
-        log.info("Calculated " + routing.size() + " connections, longest route: " + cc1 + " - " + cc2 + ", " + maxLength + " points");
-
-
     }
 
     private <T> List<T> findIntersections(Collection<T> values1, Collection<T> values2) {
@@ -154,6 +181,8 @@ public class CountryGraphService {
 
         }
         calculateRouts(allPairsBackLog, routePointsLeft - 1);
+
+
     }
 
     private short[] getDirectionalRoute(short fromIndex, short toIndex) {
@@ -191,7 +220,7 @@ public class CountryGraphService {
         short index2 = ccIndexMap.get(ccDestination);
 
 
-        short[] route = getDirectionalRoute(index1, index2);
+        final short[] route = getDirectionalRoute(index1, index2);
         if (null == route) return null;
         final List<String> routeCodes = new ArrayList<>();
         routeCodes.add(ccOrigin);

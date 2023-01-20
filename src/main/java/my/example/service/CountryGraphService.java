@@ -42,7 +42,6 @@ public class CountryGraphService {
         List<CountryJSON> countries = objectMapper.readValue(response.getBody(), new TypeReference<List<CountryJSON>>() {
         });
         for (CountryJSON ccj : countries) {
-            //log.info("Country: " + ccj.countryCode);
 
             final short index = toIndex(ccj.countryCode);
             if (ccj.borders != null && ccj.borders.length > 0) {
@@ -65,8 +64,7 @@ public class CountryGraphService {
             }
         }
 
-        final List<Short> allCountryCodes = new ArrayList<>();
-        allCountryCodes.addAll(revCcIndex.keySet());
+        final List<Short> allCountryCodes = new ArrayList<>(revCcIndex.keySet());
         allCountryCodes.sort(Short::compareTo);
 
         final List<Integer> allPairsBackLog = new ArrayList<>();

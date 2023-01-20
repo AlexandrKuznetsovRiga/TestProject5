@@ -20,10 +20,16 @@ public class BasicRestController {
 
     @RequestMapping(path = "/routing/{origin}/{destination}")
     public RoutingResponse getRouting(@PathVariable String origin, @PathVariable String destination) {
-        List<String> cCodes = graphService.findRoute(origin, destination);
+        List<String> cCodes = null;
+        try {
+            cCodes = graphService.findRoute(origin, destination);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
         if (cCodes == null || cCodes.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There is no land crossing!");
         }
+
         return new RoutingResponse(cCodes);
     }
 }

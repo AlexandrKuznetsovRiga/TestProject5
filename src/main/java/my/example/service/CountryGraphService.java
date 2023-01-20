@@ -17,6 +17,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author Alexandr Kuznetsov (alexandr@power.lv)
+ */
 @Component
 public class CountryGraphService {
     private final static Log log = LogFactory.getLog(CountryGraphService.class);

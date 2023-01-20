@@ -1,5 +1,8 @@
 package my.example.service;
 
+/**
+ * @author Alexandr Kuznetsov (alexandr@power.lv)
+ */
 public class HashUtil {
 
     public static int genHash(short code1, short code2) {

@@ -10,6 +10,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * @author Alexandr Kuznetsov (alexandr@power.lv)
+ */
 @RestController
 public class BasicRestController {
 

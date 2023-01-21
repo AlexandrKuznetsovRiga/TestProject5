@@ -52,11 +52,20 @@ public class CountryGraphService {
         final List<Short> allCountryCodes = new ArrayList<>(revCcIndex.keySet());
         allCountryCodes.sort(Short::compareTo);
 
+        final List<Integer> allPairsBackLog = getAllCountryPairs(allCountryCodes);
+
+
+        calculateRouts(allPairsBackLog);
+        infoFinalStats();
+
+    }
+
+    private List<Integer> getAllCountryPairs(List<Short> allCountryCodes) {
         final List<Integer> allPairsBackLog = new ArrayList<>();
         for (final short cCode : allCountryCodes) {
             for (int i = 0; i < allCountryCodes.size(); i++) {
                 final short cCode2 = allCountryCodes.get(i);
-                //fast way to exclude duplicates
+                //exclude duplicates
                 if (cCode2 <= cCode) {
                     continue;
                 }
@@ -66,11 +75,7 @@ public class CountryGraphService {
                 }
             }
         }
-
-
-        calculateRouts(allPairsBackLog, allCountryCodes.size());
-        infoFinalStats();
-
+        return allPairsBackLog;
     }
 
     private void infoFinalStats() {
@@ -147,9 +152,9 @@ public class CountryGraphService {
         return found != null ? found : Collections.emptyList();
     }
 
-    private void calculateRouts(List<Integer> allPairsBackLog, int routePointsLeft) {
-        if (allPairsBackLog.isEmpty() || routePointsLeft <= 0) return;
+    private void calculateRouts(List<Integer> allPairsBackLog) {
 
+        int foundNewRouts = 0;
         for (int i = allPairsBackLog.size() - 1; i > -1; i--) {
             final int hash = allPairsBackLog.get(i);
             if (routing.containsKey(hash)) {
@@ -179,11 +184,14 @@ public class CountryGraphService {
                 found.get(indexes[0]).add(indexes[1]);
                 found.get(indexes[1]).add(indexes[0]);
                 allPairsBackLog.remove(i);
+                foundNewRouts++;
             }
 
 
         }
-        calculateRouts(allPairsBackLog, routePointsLeft - 1);
+        if (allPairsBackLog.isEmpty() || foundNewRouts == 0) return;
+
+        calculateRouts(allPairsBackLog);
 
 
     }

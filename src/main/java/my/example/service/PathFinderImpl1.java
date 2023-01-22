@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Alexandr Kuznetsov (alexandr@power.lv)
  */
-@Component
+@Component("VER_1")
 public class PathFinderImpl1 implements PathFinder {
     protected final static Log log = LogFactory.getLog(PathFinderImpl1.class);
 

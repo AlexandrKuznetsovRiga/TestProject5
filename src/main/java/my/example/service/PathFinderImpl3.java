@@ -109,11 +109,9 @@ public class PathFinderImpl3 implements PathFinder {
 
                     foundNewRouts++;
 
-                    if (index1 > index3) {
-                        routing.put(hash3, reverse(routeC));
-                    } else {
-                        routing.put(hash3, routeC);
-                    }
+                    routing.put(hash3, HashUtil.isNaturalOrder(index1, index3) ? routeC : reverse(routeC));
+
+
                     final short[] conn1 = entry.getValue().getValue();
                     if (Arrays.binarySearch(conn1, index3) < 0) {
                         short[] newEntry = addAndSort(conn1, index3);

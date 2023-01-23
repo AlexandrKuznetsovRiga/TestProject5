@@ -10,14 +10,22 @@ public class HashUtil {
             throw new IllegalArgumentException("Code index <= 0");
         }
 
-        if (code1 < code2) {
+        if (isNaturalOrder(code1, code2)) {
             return ((code1 & 0xffff) << 16) | (code2 & 0xffff);
-        } else if (code2 < code1) {
+        } else {
             return ((code2 & 0xffff) << 16) | (code1 & 0xffff);
+        }
+
+    }
+
+    public static boolean isNaturalOrder(short code1, short code2) {
+        if (code1 < code2) {
+            return true;
+        } else if (code1 > code2) {
+            return false;
         } else {
             throw new IllegalArgumentException("equal codes");
         }
-
     }
 
     public static short[] extractCodes(int hash) {

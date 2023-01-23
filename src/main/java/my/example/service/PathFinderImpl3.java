@@ -84,17 +84,19 @@ public class PathFinderImpl3 implements PathFinder {
 
                 for (final short index3 : connections2) {
 
-
-                    if (index3 == index1 || Arrays.binarySearch(entry.getValue().getValue(), index3) >= 0) {
+                    if (index3 == index1) {
                         continue;
                     }
 
                     final int hash3 = HashUtil.genHash(index1, index3);
                     final short[] existingRoute = routing.get(hash3);
+                    if (existingRoute != null && existingRoute.length <= 1) {
+                        continue;
+                    }
 
                     final short[] routeA = getDirectionalRoute(routing, index1, index2);
                     final short[] routeB = getDirectionalRoute(routing, index2, index3);
-                    int routeLength = routeA.length + routeB.length + 1;
+                    final int routeLength = routeA.length + routeB.length + 1;
                     if (existingRoute != null && routeLength >= existingRoute.length) {
                         continue;
                     }

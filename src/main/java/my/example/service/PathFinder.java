@@ -16,7 +16,7 @@ public interface PathFinder {
         final int hash = HashUtil.genHash(fromIndex, toIndex);
         final short[] route = routing.get(hash);
         if (null == route) return null;
-        return fromIndex < toIndex ? route : reverse(route);
+        return HashUtil.isNaturalOrder(fromIndex, toIndex) ? route : reverse(route);
     }
 
     default short[] reverse(short[] arr) {

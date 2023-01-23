@@ -42,10 +42,7 @@ public class PathFinderImpl3 implements PathFinder {
                             v = new MutableObject<>(new short[]{index2});
                             return v;
                         }
-                        short[] values = new short[v.getValue().length + 1];
-                        System.arraycopy(v.getValue(), 0, values, 0, v.getValue().length);
-                        values[values.length - 1] = index2;
-                        Arrays.sort(values);
+                        short[] values = addAndSort(v.getValue(), index2);
                         v.setValue(values);
 
                         return v;
@@ -55,10 +52,7 @@ public class PathFinderImpl3 implements PathFinder {
                             v = new MutableObject<>(new short[]{index});
                             return v;
                         }
-                        short[] values = new short[v.getValue().length + 1];
-                        System.arraycopy(v.getValue(), 0, values, 0, v.getValue().length);
-                        values[values.length - 1] = index;
-                        Arrays.sort(values);
+                        short[] values = addAndSort(v.getValue(), index);
                         v.setValue(values);
 
                         return v;
@@ -122,18 +116,12 @@ public class PathFinderImpl3 implements PathFinder {
                     }
                     final short[] conn1 = entry.getValue().getValue();
                     if (Arrays.binarySearch(conn1, index3) < 0) {
-                        short[] newEntry = new short[conn1.length + 1];
-                        System.arraycopy(conn1, 0, newEntry, 0, conn1.length);
-                        newEntry[newEntry.length - 1] = index3;
-                        Arrays.sort(newEntry);
+                        short[] newEntry = addAndSort(conn1, index3);
                         entry.getValue().setValue(newEntry);
                     }
                     final short[] conn3 = found.get(index3).getValue();
                     if (Arrays.binarySearch(conn3, index1) < 0) {
-                        short[] newEntry = new short[conn3.length + 1];
-                        System.arraycopy(conn3, 0, newEntry, 0, conn3.length);
-                        newEntry[newEntry.length - 1] = index1;
-                        Arrays.sort(newEntry);
+                        short[] newEntry = addAndSort(conn3, index1);
                         found.get(index3).setValue(newEntry);
                     }
 
@@ -151,6 +139,14 @@ public class PathFinderImpl3 implements PathFinder {
         calculateRouts(routing, found, level + 1);
 
 
+    }
+
+    private short[] addAndSort(short[] arr, short value) {
+        short[] newArr = new short[arr.length + 1];
+        System.arraycopy(arr, 0, newArr, 0, arr.length);
+        newArr[newArr.length - 1] = value;
+        Arrays.sort(newArr);
+        return newArr;
     }
 
 
